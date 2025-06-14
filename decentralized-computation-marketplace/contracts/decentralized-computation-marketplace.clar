@@ -191,3 +191,55 @@
 (define-constant ERR-BLACKLISTED (err u118))
 (define-constant ERR-TASK-LIMIT-EXCEEDED (err u119))
 (define-constant ERR-NFT-REQUIRED (err u120))
+
+;; New task states
+(define-constant TASK-IN-ARBITRATION u8)
+(define-constant TASK-EXPIRED u9)
+
+;; Rating system
+(define-map worker-ratings
+  {task-id: uint, rater: principal, ratee: principal}
+  {
+    rating: uint,
+    comment: (string-utf8 200),
+    timestamp: uint
+  }
+)
+
+;; Worker blacklist
+(define-map blacklisted-workers
+  principal
+  {
+    blacklisted-at: uint,
+    reason: (string-utf8 200),
+    blacklisted-by: principal
+  }
+)
+
+;; Task categories and subcategories
+(define-map task-categories
+  (string-utf8 50)
+  {
+    subcategories: (list 10 (string-utf8 50)),
+    active: bool,
+    minimum-reputation: uint
+  }
+)
+
+;; Market status
+(define-data-var market-active bool true)
+
+;; User dashboard stats
+(define-map user-stats
+  principal
+  {
+    total-earned: uint,
+    total-spent: uint,
+    tasks-created: uint,
+    tasks-completed: uint,
+    avg-task-complexity: uint,
+    favorite-categories: (list 3 (string-utf8 50)),
+    last-login: uint,
+    membership-tier: uint
+  }
+)
