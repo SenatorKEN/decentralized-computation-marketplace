@@ -85,3 +85,43 @@
   }
 )
 
+;; Skills and Certification Tracking
+(define-map worker-skills
+  principal
+  {
+    certified-skills: (list 10 (string-utf8 50)),
+    skill-levels: (list 10 uint)
+  }
+)
+
+;; Dynamic Pricing Mechanism
+(define-map task-pricing
+  {task-id: uint}
+  {
+    base-price: uint,
+    dynamic-multiplier: uint,
+    price-adjusted-timestamp: uint
+  }
+)
+
+;; Advanced Worker Registration with Skills
+(define-public (register-worker-skills 
+  (skills (list 10 (string-utf8 50)))
+  (skill-levels (list 10 uint))
+)
+  (begin
+    ;; Validate input lengths match
+    (asserts! (is-eq (len skills) (len skill-levels)) ERR-UNAUTHORIZED)
+    
+    ;; Register skills for worker
+    (map-set worker-skills 
+      tx-sender 
+      {
+        certified-skills: skills,
+        skill-levels: skill-levels
+      }
+    )
+    
+    (ok true)
+  )
+)
