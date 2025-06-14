@@ -125,3 +125,69 @@
     (ok true)
   )
 )
+
+;; Comprehensive Verification Mechanism
+(define-public (verify-task-result 
+  (task-id uint)
+  (selected-result-hash (buff 32))
+  (verifier-stake uint)
+)
+  (let 
+    ((task (unwrap! (map-get? tasks {task-id: task-id}) ERR-TASK-NOT-FOUND))
+     (current-state (get state task))
+     (result-submissions (get result-submissions task))
+     (verification-threshold (get verification-threshold task))
+    )
+    
+    ;; Verification period checks
+    (asserts! (is-eq current-state TASK-SUBMITTED) ERR-INVALID-TASK-STATE)
+    (asserts! (< stacks-block-height (get challenge-period-end task)) ERR-CHALLENGE-PERIOD-ACTIVE)
+    
+    ;; Record verification
+    (map-set task-verifications
+      {task-id: task-id, verifier: tx-sender}
+      {
+        verification-hash: selected-result-hash,
+        verification-timestamp: stacks-block-height,
+        verification-stake: verifier-stake
+      }
+    )
+    
+    ;; Update task state if verification threshold met
+    (map-set tasks 
+      {task-id: task-id}
+      (merge task {state: TASK-VERIFIED})
+    )
+    
+    (ok true)
+  )
+)
+
+;; Read-only functions for retrieving comprehensive information
+(define-read-only (get-task-details (task-id uint))
+  (map-get? tasks {task-id: task-id})
+)
+
+(define-read-only (get-worker-reputation (worker principal))
+  (map-get? worker-reputation worker)
+)
+
+(define-read-only (get-worker-skills (worker principal))
+  (map-get? worker-skills worker)
+)
+
+
+(define-constant ERR-MAX-WORKERS-REACHED (err u108))
+(define-constant ERR-ALREADY-ASSIGNED (err u109))
+(define-constant ERR-NOT-ASSIGNED-WORKER (err u110))
+(define-constant ERR-PAYMENT-FAILED (err u111))
+(define-constant ERR-DEADLINE-PASSED (err u112))
+(define-constant ERR-EMPTY-DESCRIPTION (err u113))
+
+(define-constant ERR-INVALID-RATING (err u114))
+(define-constant ERR-ALREADY-RATED (err u115))
+(define-constant ERR-INACTIVE-MARKET (err u116))
+(define-constant ERR-INVALID-ESCROW (err u117))
+(define-constant ERR-BLACKLISTED (err u118))
+(define-constant ERR-TASK-LIMIT-EXCEEDED (err u119))
+(define-constant ERR-NFT-REQUIRED (err u120))
